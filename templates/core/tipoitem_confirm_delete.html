@@ -1,0 +1,14 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="alert alert-danger shadow-sm mx-auto" style="max-width: 600px;">
+    <h4>Tem certeza?</h4>
+    <p>Você está prestes a excluir o item <strong>{{ object.nome }}</strong>. Esta ação não pode ser desfeita.</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sim, excluir definitivamente</button>
+        <a href="{% url 'tipoitem_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

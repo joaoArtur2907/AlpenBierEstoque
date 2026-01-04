@@ -1,0 +1,171 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'local_list' %}">Locais</a></li>
+            <li class="breadcrumb-item active">{{ local.nome }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h1 class="display-5 fw-bold mb-0">{{ local.nome }}</h1>
+            <p class="text-muted fs-5"><i class="bi bi-geo-alt"></i> {{ local.endereco }}</p>
+        </div>
+        <a href="{% url 'local_update' local.pk %}" class="btn btn-outline-primary shadow-sm">
+            <i class="bi bi-pencil"></i> Editar Local
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-primary text-white shadow-sm border-0">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-uppercase opacity-75 small">Produtos para Venda</h6>
+                        <h2 class="mb-0 fw-bold">{{ itens_venda.count }} registros</h2>
+                    </div>
+                    <i class="bi bi-box-seam fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-dark text-white shadow-sm border-0">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-uppercase opacity-75 small">Equipamentos</h6>
+                        <h2 class="mb-0 fw-bold">{{ equipamentos.count }} unidades</h2>
+                    </div>
+                    <i class="bi bi-truck fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-header bg-white pt-3 border-bottom-0">
+            <ul class="nav nav-pills card-header-pills mb-2" id="inventoryTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active me-2" id="venda-tab" data-bs-toggle="tab" data-bs-target="#venda" type="button">
+                        <i class="bi bi-cart4"></i> Estoque de Venda
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link text-secondary" id="aluga-tab" data-bs-toggle="tab" data-bs-target="#aluga" type="button">
+                        <i class="bi bi-tools"></i> Equipamentos (Aluguel)
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="venda">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0 fw-bold">Inventário de Bebidas</h4>
+                        <a href="{% url 'produtovenda_create' local.id %}" class="btn btn-success shadow-sm">
+                            <i class="bi bi-plus-circle"></i> Adicionar novo produto
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Validade</th>
+                                    <th>Status</th>
+                                    <th>Quantidade</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in itens_venda %}
+                                <tr>
+                                    <td class="fw-bold">{{ item.tipo.nomeTipo }}</td>
+                                    <td>{{ item.validade|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <span class="badge rounded-pill bg-success-subtle text-success border border-success">Ok</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info-subtle text-info-emphasis border border-info px-3">
+                                            {{ item.quantidade }} un
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group shadow-sm">
+                                            <a href="{% url 'produtovenda_update' item.pk %}" class="btn btn-sm btn-warning fw-bold" title="Editar item">
+                                                <i class="bi bi-pencil">Editar</i>
+                                            </a>
+                                            <a href="{% url 'produtovenda_delete' item.pk %}" class="btn btn-sm btn-danger fw-bold" title="Remover do estoque">
+                                                <i class="bi bi-trash">Excluir</i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted italic">
+                                        <i class="bi bi-info-circle"></i> Sem produtos de venda neste local.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="aluga">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0 fw-bold">Ativos para Locação</h4>
+                        <a href="{% url 'equipamentoalugavel_create' local.id %}" class="btn btn-success shadow-sm">
+                            <i class="bi bi-plus-circle"></i> Adicionar novo equipamento
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Modelo</th>
+                                    <th>Nº Série</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for eq in equipamentos %}
+                                <tr>
+                                    <td class="fw-bold">{{ eq.tipo.nomeTipo }}</td>
+                                    <td class="font-monospace text-muted">#{{ eq.numeracao }}</td>
+                                    <td>
+                                        {% if eq.status == 'DISP' %}
+                                            <span class="badge bg-success shadow-sm">Disponível</span>
+                                        {% elif eq.status == 'ALUG' %}
+                                            <span class="badge bg-danger shadow-sm">Alugado</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark shadow-sm border border-warning">Manutenção</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-clock-history"></i> Histórico
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted italic">
+                                        <i class="bi bi-info-circle"></i> Sem equipamentos cadastrados.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
