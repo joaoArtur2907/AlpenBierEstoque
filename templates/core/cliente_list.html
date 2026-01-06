@@ -1,0 +1,57 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h1 class="h4 mb-0 text-dark fw-bold">Catálogo: Clientes</h1>
+            <a href="{% url 'cliente_create' %}" class="btn btn-success shadow-sm">
+                <i class="bi bi-plus-lg"></i> Novo Cliente
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 10%">ID</th>
+                            <th>Nome do Cliente</th>
+                            <th>CPF/CNPJ</th>
+                            <th>Endereço</th>
+                            <th>Telefone</th>
+                            <th class="text-end" style="width: 20%">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cliente in clientes %}
+                        <tr>
+                            <td class="text-muted">#{{ clientes.id }}</td>
+                            <td class="fw-bold">{{ cliente.nome }}</td>
+                            <td class="fw-bold">{{ cliente.cpf_cnpj }}</td>
+                            <td class="fw-bold">{{ cliente.endereco }}</td>
+                            <td class="fw-bold">{{ cliente.telefone }}</td>
+                            <td class="text-end">
+                                <div class="btn-group">
+                                    <a href="{% url 'cliente_update' cliente.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <a href="{% url 'cliente_delete' cliente.pk %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> Excluir
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-4 text-muted">
+                                Nenhum tipo de item cadastrado no catálogo.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

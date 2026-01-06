@@ -1,0 +1,35 @@
+{% extends 'core/base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="card shadow-sm mx-auto" style="max-width: 600px;">
+    <div class="card-body">
+        <h2 class="card-title mb-2">Registrar Locação</h2>
+        <p class="text-muted mb-4">Equipamento: <strong>{{ equipamento.tipo.nomeTipo }} (#{{ equipamento.numeracao }})</strong></p>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {% if "data" in field.name %}
+                        {% render_field field class="form-control" type="date" %}
+                    {% else %}
+                        {% render_field field class="form-control" placeholder="Nome do cliente ou evento" %}
+                    {% endif %}
+                    
+                    {% if field.errors %}
+                        <div class="text-danger small">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg flex-grow-1">Confirmar Aluguel</button>
+                <a href="{% url 'local_detail' equipamento.local_origem.id %}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

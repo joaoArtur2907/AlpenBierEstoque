@@ -17,6 +17,9 @@
         <a href="{% url 'local_update' local.pk %}" class="btn btn-outline-primary shadow-sm">
             <i class="bi bi-pencil"></i> Editar Local
         </a>
+        <a href="{% url 'venda_create' local.id %}" class="btn btn-warning shadow-sm">
+            <i class="bi bi-cart-dash"></i> Nova Venda / Saída
+        </a>
     </div>
 
     <div class="row mb-4">
@@ -94,7 +97,7 @@
                                         </span>
                                     </td>
                                     <td class="text-end">
-                                        <div class="btn-group shadow-sm">
+                                         <div class="btn-group shadow-sm">
                                             <a href="{% url 'produtovenda_update' item.pk %}" class="btn btn-sm btn-warning fw-bold" title="Editar item">
                                                 <i class="bi bi-pencil">Editar</i>
                                             </a>
@@ -105,11 +108,7 @@
                                     </td>
                                 </tr>
                                 {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center py-5 text-muted italic">
-                                        <i class="bi bi-info-circle"></i> Sem produtos de venda neste local.
-                                    </td>
-                                </tr>
+                                <tr><td colspan="5" class="text-center py-5 text-muted">Sem produtos cadastrados.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -148,17 +147,30 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-end">
-                                        <button class="btn btn-sm btn-outline-secondary">
-                                            <i class="bi bi-clock-history"></i> Histórico
-                                        </button>
+                                        <div class="btn-group shadow-sm">
+                                            {% if eq.status == 'DISP' %}
+                                            <a href="{% url 'locacao_create' eq.pk %}" class="btn btn-sm btn-success fw-bold" title="Alugar">
+                                                <i class="bi bi-pencil">Alugar</i>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if eq.status == 'ALUG' %}
+                                            <a href="{% url 'equipamento_devolver' eq.pk %}" class="btn btn-sm btn-info fw-bold text-white" title="Devolver">
+                                                <i class="bi bi-arrow-return-left">Devolver</i>
+                                            </a>
+                                            {% endif %}
+
+                                            <a href="{% url 'equipamentoalugavel_update' eq.pk %}" class="btn btn-sm btn-warning fw-bold" title="Editar item">
+                                                <i class="bi bi-pencil">Editar</i>
+                                            </a>
+                                            <a href="{% url 'equipamentoalugavel_delete' eq.pk %}" class="btn btn-sm btn-danger fw-bold" title="Remover do estoque">
+                                                <i class="bi bi-trash">Excluir</i>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted italic">
-                                        <i class="bi bi-info-circle"></i> Sem equipamentos cadastrados.
-                                    </td>
-                                </tr>
+                                <tr><td colspan="4" class="text-center py-5 text-muted">Sem equipamentos cadastrados.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
