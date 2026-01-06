@@ -44,5 +44,17 @@ urlpatterns = [
     path('equipamentoalugavel/editar/<int:pk>/', views.EquipamentoAlugavelUpdateView.as_view(), name='equipamentoalugavel_update'),
     path('equipamentoalugavel/deletar/<int:pk>/', views.EquipamentoAlugavelDeleteView.as_view(), name='equipamentoalugavel_delete'),
 
+    path('equipamento/<int:pk>/alugar/', views.LocacaoCreateView.as_view(), name='locacao_create'),
+    path('equipamento/<int:pk>/devolver/', views.EquipamentoDevolverView.as_view(), name='equipamento_devolver'),
+
+    # cliente
+
+    path('cliente/', views.ClienteListView.as_view(), name='cliente_list'),
+    path('cliente/novo/', views.ClienteCreateView.as_view(), name='cliente_create'),
+    path('cliente/editar/<int:pk>/', views.ClienteUpdateView.as_view(), name='cliente_update'),
+    path('cliente/deletar/<int:pk>/', views.ClienteDeleteView.as_view(), name='cliente_delete'),
+
+    # venda
+    path('local/<int:local_id>/venda/nova/', views.VendaCreateView.as_view(), name='venda_create'),
 
 ]
