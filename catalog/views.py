@@ -8,6 +8,7 @@ from django.views import generic
 from .models import Locacao, EquipamentoAlugavel, Cliente, Venda, ItemVenda
 from django.shortcuts import get_object_or_404
 from datetime import date
+from .forms import VendaForm, ItemVendaFormSet
 
 from catalog.models import Locacao, Local, ProdutoVenda, TipoItem, EquipamentoAlugavel
 
