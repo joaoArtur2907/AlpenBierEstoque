@@ -69,17 +69,22 @@ class Cliente(models.Model):
 #     DataVenda = models.DateField()
 
 class Venda(models.Model):
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, blank=True)
     local_origem = models.ForeignKey(Local, on_delete=models.CASCADE)
     data_venda = models.DateField(blank=True, null=True)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
+    cliente_nome_snapshot = models.CharField(max_length=120, blank=True, null=True)
+
     def __str__(self):
+        nome = self.cliente.nome if self.cliente else self.cliente.cliente_nome_snapshot
         return f"Venda {self.id} - {self.cliente.nome}"
 
 class ItemVenda(models.Model):
     venda = models.ForeignKey(Venda, on_delete=models.CASCADE, related_name='itens')
-    tipo_item = models.ForeignKey(TipoItem, on_delete=models.CASCADE)
+
+    tipo_item = models.ForeignKey(TipoItem, on_delete=models.SET_NULL, null=True, blank=True)
     quantidade = models.PositiveIntegerField(default=0)
     preco_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
+    produto_nome_snapshot = models.CharField(max_length=120, blank=True, null=True)
