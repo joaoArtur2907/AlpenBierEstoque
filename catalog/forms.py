@@ -6,10 +6,9 @@ class VendaForm(forms.ModelForm):
         model = Venda
         fields = ['cliente']
 
-# O Formset permite adicionar vários ItemVenda a uma Venda
 ItemVendaFormSet = forms.inlineformset_factory(
     Venda, ItemVenda,
     fields=['tipo_item', 'quantidade', 'preco_unitario'],
-    extra=3, # Quantos espaços vazios aparecem inicialmente
+    extra=1, # Começa com apenas 1 linha
     can_delete=True
 )

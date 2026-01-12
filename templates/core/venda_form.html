@@ -2,39 +2,108 @@
 {% load widget_tweaks %}
 
 {% block content %}
-<div class="card shadow-sm mx-auto" style="max-width: 600px;">
-    <div class="card-body">
-        <h2 class="card-title mb-4">Registrar Saída/Venda</h2>
-        
-        <form method="post">
-            {% csrf_token %}
-            
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-            {% endif %}
+<div class="container py-4">
+    <div class="card shadow mx-auto" style="max-width: 900px;">
+        <div class="card-header bg-primary text-white py-3">
+            <h2 class="card-title h4 mb-0">Nova Venda / Saída de Estoque</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" id="venda-form" novalidate>
+                {% csrf_token %}
 
-            <div class="mb-3">
-                <label class="form-label">Cliente</label>
-                {% render_field form.cliente class="form-control" %}
-            </div>
+                {% if itens.non_form_errors %}
+                    <div class="alert alert-danger">{{ itens.non_form_errors }}</div>
+                {% endif %}
 
-            <div class="mb-3">
-                <label class="form-label">Produto a retirar</label>
-                <select name="tipo_item" class="form-control">
-                    {% for tipo in tipos_disponiveis %}
-                        <option value="{{ tipo.id }}">{{ tipo.nomeTipo }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Selecione o Cliente</label>
+                        {% render_field form.cliente class="form-control" %}
+                    </div>
+                </div>
 
-            <div class="mb-3">
-                <label class="form-label">Quantidade Total</label>
-                <input type="number" name="quantidade" class="form-control" min="1" required>
-            </div>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Itens da Venda</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="add-item">
+                        <i class="bi bi-plus-circle"></i> Adicionar outro item
+                    </button>
+                </div>
 
-            <button type="submit" class="btn btn-primary btn-lg w-100">Confirmar Venda e Baixar Estoque</button>
-            <a href="{% url 'local_list' %}" class="btn btn-outline-secondary w-100 mt-2">Cancelar</a>
-        </form>
+                {{ itens.management_form }}
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle" id="items-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Produto</th>
+                                <th style="width: 200px;">Qtd</th>
+                                <th style="width: 200px;">Preço Unit. (R$)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item_form in itens %}
+                                <tr class="item-row">
+                                    <td>
+                                        {% for hidden in item_form.hidden_fields %} {{ hidden }} {% endfor %}
+                                        {% render_field item_form.tipo_item class="form-control" %}
+                                    </td>
+                                    <td>
+                                        {% render_field item_form.quantidade class="form-control" min="1" %}
+                                        {% if item_form.quantidade.errors %}
+                                            {% for error in item_form.quantidade.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    <strong><i class="bi bi-exclamation-triangle"></i> {{ error }}</strong>
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                    <td>{% render_field item_form.preco_unitario class="form-control" step="0.01" %}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg flex-grow-1">Confirmar Venda</button>
+                    <a href="{% url 'local_list' %}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('add-item').addEventListener('click', function() {
+        const tableBody = document.querySelector('#items-table tbody');
+        const totalForms = document.getElementById('id_itens-TOTAL_FORMS');
+        const currentFormCount = parseInt(totalForms.value);
+
+        const newRow = document.querySelector('.item-row').cloneNode(true);
+
+        newRow.innerHTML = newRow.innerHTML.replace(/-0-/g, `-${currentFormCount}-`);
+
+        // Limpa valores e remove mensagens de erro clonadas
+        const inputs = newRow.querySelectorAll('input, select');
+        inputs.forEach(input => {
+        if (input.type !== 'hidden') {
+        input.value = '';
+        // Reforça os limites no JavaScript ao criar nova linha
+        if (input.name.includes('quantidade')) input.min = "1";
+        if (input.name.includes('preco_unitario')) input.min = "0";
+    }
+});
+
+
+
+        const errorMessages = newRow.querySelectorAll('.text-danger');
+        errorMessages.forEach(msg => msg.remove());
+
+        tableBody.appendChild(newRow);
+        totalForms.value = currentFormCount + 1;
+
+
+    });
+</script>
 {% endblock %}

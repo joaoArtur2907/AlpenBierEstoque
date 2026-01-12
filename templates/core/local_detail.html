@@ -98,10 +98,10 @@
                                     </td>
                                     <td class="text-end">
                                          <div class="btn-group shadow-sm">
-                                            <a href="{% url 'produtovenda_update' item.pk %}" class="btn btn-sm btn-warning fw-bold" title="Editar item">
+                                            <a href="{% url 'produtovenda_update' item.pk %}" class="btn btn-sm btn-outline-warning" title="Editar item">
                                                 <i class="bi bi-pencil">Editar</i>
                                             </a>
-                                            <a href="{% url 'produtovenda_delete' item.pk %}" class="btn btn-sm btn-danger fw-bold" title="Remover do estoque">
+                                            <a href="{% url 'produtovenda_delete' item.pk %}" class="btn btn-sm btn-outline-danger" title="Remover do estoque">
                                                 <i class="bi bi-trash">Excluir</i>
                                             </a>
                                         </div>
@@ -149,21 +149,21 @@
                                     <td class="text-end">
                                         <div class="btn-group shadow-sm">
                                             {% if eq.status == 'DISP' %}
-                                            <a href="{% url 'locacao_create' eq.pk %}" class="btn btn-sm btn-success fw-bold" title="Alugar">
+                                            <a href="{% url 'locacao_create' eq.pk %}" class="btn btn-sm btn-outline-success" title="Alugar">
                                                 <i class="bi bi-pencil">Alugar</i>
                                             </a>
                                             {% endif %}
 
                                             {% if eq.status == 'ALUG' %}
-                                            <a href="{% url 'equipamento_devolver' eq.pk %}" class="btn btn-sm btn-info fw-bold text-white" title="Devolver">
+                                            <a href="{% url 'equipamento_devolver' eq.pk %}" class="btn btn-sm btn-outline-success" title="Devolver">
                                                 <i class="bi bi-arrow-return-left">Devolver</i>
                                             </a>
                                             {% endif %}
 
-                                            <a href="{% url 'equipamentoalugavel_update' eq.pk %}" class="btn btn-sm btn-warning fw-bold" title="Editar item">
+                                            <a href="{% url 'equipamentoalugavel_update' eq.pk %}" class="btn btn-sm btn-outline-warning" title="Editar item">
                                                 <i class="bi bi-pencil">Editar</i>
                                             </a>
-                                            <a href="{% url 'equipamentoalugavel_delete' eq.pk %}" class="btn btn-sm btn-danger fw-bold" title="Remover do estoque">
+                                            <a href="{% url 'equipamentoalugavel_delete' eq.pk %}" class="btn btn-sm btn-outline-danger" title="Remover do estoque">
                                                 <i class="bi bi-trash">Excluir</i>
                                             </a>
                                         </div>

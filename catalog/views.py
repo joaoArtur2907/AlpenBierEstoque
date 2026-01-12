@@ -236,70 +236,123 @@ class ClienteDeleteView(DeleteView):
 
 class VendaCreateView(CreateView):
     model = Venda
-    fields = ['cliente']
+    form_class = VendaForm
     template_name = 'core/venda_form.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        local_id = self.kwargs.get('local_id')  # Corrigido de pk para local_id
+        local_id = self.kwargs.get('local_id')
 
-        # Filtra tipos de itens que possuem pelo menos um registro de estoque neste local
-        context['tipos_disponiveis'] = TipoItem.objects.filter(
+        # Filtro para o dropdown: apenas produtos com estoque > 0 neste local
+        tipos_disponiveis = TipoItem.objects.filter(
             produtovenda__local_id=local_id,
             produtovenda__quantidade__gt=0
         ).distinct()
 
+        # Prioriza o formset que já contém erros, se existir
+        if 'itens' in kwargs:
+            itens_formset = kwargs['itens']
+        else:
+            if self.request.POST:
+                itens_formset = ItemVendaFormSet(self.request.POST)
+            else:
+                itens_formset = ItemVendaFormSet()
+
+        # Aplica o filtro de estoque em cada linha da tabela
+        for f in itens_formset.forms:
+            f.fields['tipo_item'].queryset = tipos_disponiveis
+
+        context['itens'] = itens_formset
         context['local_id'] = local_id
         return context
 
     def form_valid(self, form):
-        # recupera dados basicos
-        local_id = self.kwargs.get('local_id')
-        local = get_object_or_404(Local, pk=local_id)
+        # Instancia o formset para validação
+        itens_formset = ItemVendaFormSet(self.request.POST)
+        local = get_object_or_404(Local, pk=self.kwargs.get('local_id'))
 
-        tipo_item_id = self.request.POST.get('tipo_item')
-        tipo_item = get_object_or_404(TipoItem, pk=tipo_item_id)
-        quantidade_pedida = int(self.request.POST.get('quantidade'))
+        if itens_formset.is_valid():
+            # Validação de Estoque antes de salvar
+            for item_form in itens_formset:
+                if item_form.cleaned_data and not item_form.cleaned_data.get('DELETE'):
+                    tipo = item_form.cleaned_data.get('tipo_item')
+                    qtd_pedida = item_form.cleaned_data.get('quantidade')
 
-        # inicia transação postgres
-        with transaction.atomic():
-            # busca estoque ordenado pela validade
-            estoque = ProdutoVenda.objects.filter(local = local, tipo = tipo_item).order_by('validade')
+                    preco = item_form.cleaned_data.get('preco_unitario')
 
-            # verifica se há estoque suficiente
-            total_disponivel = sum(item.quantidade for item in estoque)
-            if total_disponivel < quantidade_pedida:
-                form.add_error(None, f"Estoque insuficiente. Disponível: {total_disponivel}")
-                return self.form_invalid(form)
+                    # Validação de valor negativo ou zero
+                    if qtd_pedida <= 0:
+                        item_form.add_error('quantidade', "A quantidade deve ser maior que zero.")
+                        return self.render_to_response(self.get_context_data(form=form, itens=itens_formset))
 
-            # executa venda
-            form.instance.local_origem = local
-            form.instance.data_venda = date.today()
-            response = super().form_valid(form) # salva venda
+                    if preco < 0:
+                        item_form.add_error('preco_unitario', "O preço não pode ser negativo.")
+                        return self.render_to_response(self.get_context_data(form=form, itens=itens_formset))
 
-            # logica de cascata abastecimento estoque
+                    total_estoque = sum(p.quantidade for p in ProdutoVenda.objects.filter(local=local, tipo=tipo))
 
-            restante = quantidade_pedida
-            for lote in estoque:
-                if restante <= 0: break
+                    if total_estoque < qtd_pedida:
+                        # Adiciona o erro e retorna o formset específico
+                        item_form.add_error('quantidade', f"Estoque insuficiente! (Disponível: {total_estoque})")
+                        return self.render_to_response(self.get_context_data(form=form, itens=itens_formset))
 
-                if lote.quantidade <= restante:
-                    restante -= lote.quantidade
-                    lote.delete() #esvaziou o lote remove o bloco
-                else:
-                    lote.quantidade -= restante
-                    lote.save() # sobrou algo no lote apenas atualiza
-                    restante = 0
 
-            ItemVenda.objects.create(
-                venda=self.object,
-                tipo_item=tipo_item,
-                quantidade=quantidade_pedida,
-                preco_unitario=0.00 # adicionar campo preço no tipoitem # TODO
 
-            )
+            with transaction.atomic():
+                form.instance.local_origem = local
+                form.instance.data_venda = date.today()
 
-            return response
+                if form.instance.cliente:
+                    form.instance.cliente_nome_snapshot = form.instance.cliente.nome
+
+                self.object = form.save()
+
+                itens = itens_formset.save(commit=False)
+                total_venda = 0
+
+                for item in itens:
+                    item.venda = self.object
+
+                    if item.tipo_item:
+                        item.produto_nome_snapshot = item.tipo_item.nomeTipo
+
+                    estoque = list(ProdutoVenda.objects.filter(local=local, tipo=item.tipo_item).order_by('validade'))
+
+                    restante = item.quantidade
+                    for lote in estoque:
+                        if restante <= 0: break
+                        if lote.quantidade <= restante:
+                            restante -= lote.quantidade
+                            lote.delete()
+                        else:
+                            lote.quantidade -= restante
+                            lote.save()
+                            restante = 0
+
+                    total_venda += (item.quantidade * item.preco_unitario)
+                    item.save()
+
+                self.object.valor_total = total_venda
+                self.object.save()
+                return redirect(self.get_success_url())
+
+        return self.render_to_response(self.get_context_data(form=form, itens=itens_formset))
 
     def get_success_url(self):
-        return reverse('local_detail', kwargs={'pk': self.object.local_origem.id})
+        return reverse('local_detail', kwargs={'pk': self.kwargs.get('local_id')})
+class VendaListView(ListView):
+    model = Venda
+    template_name = 'core/venda_list.html'
+    context_object_name = 'vendas'
+
+    def get_queryset(self):
+        queryset = Venda.objects.all().order_by('-data_venda')
+        local_id = self.request.GET.get('local') # Pega o ?local=ID da URL
+        if local_id:
+            queryset = queryset.filter(local_origem_id=local_id)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['locais'] = Local.objects.all() # Para o botão de filtro
+        return context

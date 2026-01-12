@@ -56,5 +56,7 @@ urlpatterns = [
 
     # venda
     path('local/<int:local_id>/venda/nova/', views.VendaCreateView.as_view(), name='venda_create'),
+    path('vendas/', views.VendaListView.as_view(), name='venda_list'),
+
 
 ]
