@@ -1,41 +1,41 @@
-{% extends 'core/base.html' %}
-{% load widget_tweaks %}
+    {% extends 'core/base.html' %}
+    {% load widget_tweaks %}
 
-{% block content %}
-<div class="card shadow-sm mx-auto" style="max-width: 600px;">
-    <div class="card-body">
-        <h2 class="card-title mb-4">
-            {% if object %} Editar produto alugável: {{ object.nome }} {% else %} Novo produto alugável {% endif %}
-        </h2>
+    {% block content %}
+    <div class="card shadow-sm mx-auto" style="max-width: 600px;">
+        <div class="card-body">
+            <h2 class="card-title mb-4">
+                {% if object %} Editar produto alugável: {{ object.nome }} {% else %} Novo produto alugável {% endif %}
+            </h2>
 
-        <form method="post" novalidate>
-            {% csrf_token %}
+            <form method="post" novalidate>
+                {% csrf_token %}
 
-            {% for field in form %}
-                <div class="mb-3">
-                    <label class="form-label">{{ field.label }}</label>
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
 
-                    {% if field.name == 'validade' %}
-                        {% render_field field class="form-control" type="date" %}
-                    {% else %}
-                        {% render_field field class="form-control" %}
-                    {% endif %}
+                        {% if field.name == 'validade' %}
+                            {% render_field field class="form-control" type="date" %}
+                        {% else %}
+                            {% render_field field class="form-control" %}
+                        {% endif %}
 
-                    {% if field.errors %}
-                        {% for error in field.errors %}
-                            <div class="text-danger small mt-1">
-                                {{ error }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            {% endfor %}
+                        {% if field.errors %}
+                            {% for error in field.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                {% endfor %}
 
-             <button type="submit" class="btn btn-success btn-lg flex-grow-1">
-                <i class="bi bi-pencil"></i> Salvar
-              </button>
-            <a href="{% url 'local_list' %}" class="btn btn-outline-secondary">Cancelar</a>
-        </form>
+                 <button type="submit" class="btn btn-success btn-lg flex-grow-1">
+                    <i class="bi bi-pencil"></i> Salvar
+                  </button>
+                <a href="{% url 'local_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </form>
+        </div>
     </div>
-</div>
-{% endblock %}
+    {% endblock %}

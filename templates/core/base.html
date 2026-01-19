@@ -10,14 +10,32 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
+                 <div class="d-flex align-items-center">
+          {% if user.is_authenticated %}
+              <span class="me-3 text-white">Olá, {{ user.username }}</span>
+
+              <form action="{% url 'logout' %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-light btn-sm">Sair</button>
+              </form>
+          {% else %}
+              <a href="{% url 'login' %}" class="btn btn-light btn-sm">Entrar</a>
+          {% endif %}
+      </div>
             <a class="navbar-brand" href="#">Estoque Alpen Bier</a>
             <div class="navbar-nav">
                 <a class="nav-link" href="{% url 'local_list' %}">Locais</a>
                 <a class="nav-link" href="{% url 'tipoitem_list' %}">Itens</a>
                 <a class="nav-link" href="{% url 'cliente_list' %}">Clientes</a>
                 <a class="nav-link" href="{% url 'venda_list' %}">Vendas</a>
+                {% if user.is_superuser %}
+                <a class="nav-link" href="{% url 'user-list' %}">Usuários</a>
+                {% endif %}
             </div>
         </div>
+        <nav class="navbar ...">
+
+</nav>
     </nav>
 
     <div class="container">
