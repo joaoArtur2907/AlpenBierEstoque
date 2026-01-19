@@ -1,0 +1,60 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h1 class="h4 mb-0 text-dark fw-bold">Catálogo: Usuários</h1>
+            <a href="{% url 'usuarios-create' %}" class="btn btn-success shadow-sm">
+                <i class="bi bi-plus-lg"></i> Novo Usuário
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 10%">ID</th>
+                            <th>Nome do Usuário</th>
+                            <th>Email</th>
+                            <th>Status</th> <th class="text-end" style="width: 20%">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %} <tr>
+                            <td class="text-muted">#{{ u.id }}</td>
+                            <td class="fw-bold">{{ u.username }}</td>
+                            <td>{{ u.email|default:"Não informado" }}</td>
+                            <td>
+                                {% if u.is_superuser %}
+                                    <span class="badge bg-danger">Admin</span>
+                                {% else %}
+                                    <span class="badge bg-primary">Funcionário</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group">
+                                    <a href="{% url 'usuarios-update' u.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+
+                                    <a href="{% url 'usuarios-delete' u.pk %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> Excluir
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                Nenhum usuário encontrado.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

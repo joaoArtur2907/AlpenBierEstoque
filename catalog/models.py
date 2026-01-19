@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models import UniqueConstraint
 from django.urls import reverse
 from django.db.models.functions import Lower
-
+from django.contrib.auth.models import User
 # Create your models here.
 
 class TipoItem(models.Model):
@@ -47,8 +47,8 @@ class EquipamentoAlugavel(models.Model):
 class Locacao(models.Model):
     equipamento = models.ForeignKey(EquipamentoAlugavel, on_delete=models.CASCADE)
     cliente_local = models.CharField(max_length=120)
-    dataInicio = models.DateField()
-    dataFim = models.DateField()
+    dataInicio = models.DateField(verbose_name="Data inicial")
+    dataFim = models.DateField(verbose_name="Data Final")
     devolvido = models.BooleanField(default=False)
 
 
@@ -70,11 +70,15 @@ class Cliente(models.Model):
 
 class Venda(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, blank=True)
-    local_origem = models.ForeignKey(Local, on_delete=models.CASCADE)
+    local_origem = models.ForeignKey(Local, on_delete=models.SET_NULL, null=True, blank=True)
     data_venda = models.DateField(blank=True, null=True)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     cliente_nome_snapshot = models.CharField(max_length=120, blank=True, null=True)
+    local_origem_snapshot = models.CharField(max_length=120, blank=True, null=True)
+
+    vendedor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    vendedor_nome_snapshot = models.CharField(max_length=120, blank=True, null=True)
 
     def __str__(self):
         nome = self.cliente.nome if self.cliente else self.cliente.cliente_nome_snapshot

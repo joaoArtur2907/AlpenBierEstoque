@@ -14,13 +14,18 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django import core
 # from django.contrib import admin
 from django.urls import path
 from catalog import views
 from django.urls import path, include
-
+from django.contrib import admin
+from django.contrib.auth import views as auth_views
 urlpatterns = [
-    #    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
+
+    path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('accounts/logout/', auth_views.LogoutView.as_view(template_name='registration/logged_out.html'), name='logout'),
     # locais
     path('locais/', views.LocalListView.as_view(), name='local_list'),
     path('locais/novo/', views.CreateLocalView.as_view(), name='local_create'),
@@ -57,6 +62,13 @@ urlpatterns = [
     # venda
     path('local/<int:local_id>/venda/nova/', views.VendaCreateView.as_view(), name='venda_create'),
     path('vendas/', views.VendaListView.as_view(), name='venda_list'),
+
+    # users
+    path('usuarios/', views.UserListView.as_view(), name='user-list'),
+    path('usuarios/create', views.UserCreateView.as_view(), name='usuarios-create'),
+    path('usuarios/<int:pk>/update', views.UserUpdateView.as_view(), name='usuarios-update'),
+    path('usuarios/<int:pk>/delete', views.UserDeleteView.as_view(), name='usuarios-delete'),
+
 
 
 ]

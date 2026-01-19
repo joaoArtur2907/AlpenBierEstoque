@@ -1,6 +1,8 @@
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
@@ -8,36 +10,81 @@ from django.views import generic
 from .models import Locacao, EquipamentoAlugavel, Cliente, Venda, ItemVenda
 from django.shortcuts import get_object_or_404
 from datetime import date
-from .forms import VendaForm, ItemVendaFormSet
+from .forms import VendaForm, ItemVendaFormSet, UserForm, CustomUserCreationForm
+from django.contrib.auth.models import User
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from catalog.models import Locacao, Local, ProdutoVenda, TipoItem, EquipamentoAlugavel
 
 
 # Create your views here.
 
-class LocalListView(ListView):
+#users
+
+class UserListView(LoginRequiredMixin, ListView):
+    model = User
+    context_object_name = 'usuarios'
+    template_name = 'core/user_list.html'
+    paginate_by = 10
+    ordering = ['-id']
+
+class UserCreateView(LoginRequiredMixin, CreateView):
+    model = User
+    template_name = 'core/user_form.html'
+    form_class = CustomUserCreationForm
+
+    def get_success_url(self):
+        return reverse('user-list')
+
+class UserUpdateView(LoginRequiredMixin, UpdateView):
+    model = User
+    initial = {'nome':'<NAME>'}
+    template_name = 'core/user_form.html'
+    form_class = UserForm
+
+    def get_success_url(self):
+        return reverse('user-list')
+
+class UserDeleteView(LoginRequiredMixin,DeleteView):
+    model = User
+    success_url = reverse_lazy('user-list')
+    template_name = 'core/user_confirm_delete.html'
+
+    def form_valid(self, form):
+        obj_id = self.object.id
+        try:
+            self.object.delete()
+            return HttpResponseRedirect(self.success_url)
+        except Exception as e:
+            return HttpResponseRedirect(
+                reverse("user-list")
+            )
+
+# locais
+
+class LocalListView(LoginRequiredMixin,ListView):
     model = Local
     template_name = 'core/local_list.html'
     context_object_name = 'locais'
 
-class CreateLocalView(CreateView):
+class CreateLocalView(LoginRequiredMixin,CreateView):
     model = Local
     fields = '__all__'
     template_name = 'core/local_form.html'
     success_url = reverse_lazy('local_list')
 
-class UpdateLocalView(UpdateView):
+class UpdateLocalView(LoginRequiredMixin,UpdateView):
     model = Local
     fields = ['nome', 'endereco']
     success_url = reverse_lazy('local_list')
     template_name = 'core/local_form.html'
 
-class DeleteLocalView(DeleteView):
+class DeleteLocalView(LoginRequiredMixin,DeleteView):
     model = Local
     success_url = reverse_lazy('local_list')
     template_name = 'core/local_confirm_delete.html'
 
-class LocalDetailView(generic.DetailView):
+class LocalDetailView(LoginRequiredMixin,generic.DetailView):
     model = Local
     template_name = 'core/local_detail.html'
     context_object_name = 'local'
@@ -48,12 +95,12 @@ class LocalDetailView(generic.DetailView):
         context['equipamentos'] = self.object.equipamentoalugavel_set.all().select_related('tipo')
         return context
 
-class ProdutoVendaListView(ListView):
+class ProdutoVendaListView(LoginRequiredMixin,ListView):
     model = ProdutoVenda
     template_name = 'core/registro_venda_list.html'
     context_object_name = 'registro_venda'
 
-class ProdutoVendaCreateView(CreateView):
+class ProdutoVendaCreateView(LoginRequiredMixin,CreateView):
     model = ProdutoVenda
     fields = '__all__'
     template_name = 'core/produtovenda_form.html'
@@ -78,7 +125,7 @@ class ProdutoVendaCreateView(CreateView):
     def get_success_url(self):
         return reverse('local_detail', kwargs={'pk': self.object.local.id})
 
-class ProdutoVendaUpdateView(UpdateView):
+class ProdutoVendaUpdateView(LoginRequiredMixin,UpdateView):
     model = ProdutoVenda
     fields = '__all__'
     template_name = 'core/produtovenda_form.html'
@@ -86,7 +133,7 @@ class ProdutoVendaUpdateView(UpdateView):
     def get_success_url(self):
         return reverse('local_detail', kwargs={'pk': self.object.local.id})
 
-class ProdutoVendaDeleteView(DeleteView):
+class ProdutoVendaDeleteView(LoginRequiredMixin,DeleteView):
     model = ProdutoVenda
     fields = '__all__'
     template_name = 'core/produtovenda_confirm_delete.html'
@@ -95,31 +142,31 @@ class ProdutoVendaDeleteView(DeleteView):
         return reverse('local_detail', kwargs={'pk': self.object.local.id})
 
 
-class TipoItemListView(ListView):
+class TipoItemListView(LoginRequiredMixin,ListView):
     model = TipoItem
     template_name = 'core/tipoitem_list.html'
     context_object_name = 'itens'
 
-class TipoItemCreateView(CreateView):
+class TipoItemCreateView(LoginRequiredMixin,CreateView):
     model = TipoItem
     fields = '__all__'
     template_name = 'core/tipoitem_form.html'
     success_url = reverse_lazy('tipoitem_list')
 
-class TipoItemUpdateView(UpdateView):
+class TipoItemUpdateView(LoginRequiredMixin,UpdateView):
     model = TipoItem
     fields = '__all__'
     template_name = 'core/tipoitem_form.html'
     success_url = reverse_lazy('tipoitem_list')
 
-class TipoItemDeleteView(DeleteView):
+class TipoItemDeleteView(LoginRequiredMixin,DeleteView):
     model = TipoItem
     fields = '__all__'
     template_name = 'core/tipoitem_confirm_delete.html'
     success_url = reverse_lazy('tipoitem_list')
 
 
-class EquipamentoAlugavelCreateView(CreateView):
+class EquipamentoAlugavelCreateView(LoginRequiredMixin,CreateView):
     model = EquipamentoAlugavel
     fields = '__all__'
     template_name = 'core/equipamentoalugavel_form.html'
@@ -144,7 +191,7 @@ class EquipamentoAlugavelCreateView(CreateView):
     def get_success_url(self):
         return reverse('local_detail', kwargs={'pk': self.object.local_origem.id})
 
-class EquipamentoAlugavelUpdateView(UpdateView):
+class EquipamentoAlugavelUpdateView(LoginRequiredMixin,UpdateView):
     model = EquipamentoAlugavel
     fields = '__all__'
     template_name = 'core/equipamentoalugavel_form.html'
@@ -152,7 +199,7 @@ class EquipamentoAlugavelUpdateView(UpdateView):
     def get_success_url(self):
         return reverse('local_detail', kwargs={'pk': self.object.local_origem.id})
 
-class EquipamentoAlugavelDeleteView(DeleteView):
+class EquipamentoAlugavelDeleteView(LoginRequiredMixin,DeleteView):
     model = EquipamentoAlugavel
     fields = '__all__'
     template_name = 'core/equipamentoalugavel_confirm_delete.html'
@@ -161,7 +208,7 @@ class EquipamentoAlugavelDeleteView(DeleteView):
         return reverse('local_detail', kwargs={'pk': self.object.local_origem.id})
 
 
-class LocacaoCreateView(CreateView):
+class LocacaoCreateView(LoginRequiredMixin,CreateView):
     model = Locacao
     fields = ['cliente_local', 'dataInicio', 'dataFim']
     template_name = 'core/locacao_form.html'
@@ -190,7 +237,7 @@ class LocacaoCreateView(CreateView):
         return reverse('local_detail', kwargs={'pk': self.object.equipamento.local_origem.id})
 
 
-class EquipamentoDevolverView(generic.View):
+class EquipamentoDevolverView(LoginRequiredMixin,generic.View):
     def get(self, request, *args, **kwargs):
         # Busca o equipamento
         equipamento = get_object_or_404(EquipamentoAlugavel, pk=self.kwargs.get('pk'))
@@ -210,31 +257,31 @@ class EquipamentoDevolverView(generic.View):
 
 # cliente
 
-class ClienteListView(ListView):
+class ClienteListView(LoginRequiredMixin,ListView):
     model = Cliente
     template_name = 'core/cliente_list.html'
     context_object_name = 'clientes'
 
-class ClienteCreateView(CreateView):
+class ClienteCreateView(LoginRequiredMixin,CreateView):
     model = Cliente
     fields = '__all__'
     template_name = 'core/cliente_form.html'
     success_url = reverse_lazy('cliente_list')
 
-class ClienteUpdateView(UpdateView):
+class ClienteUpdateView(LoginRequiredMixin,UpdateView):
     model = Cliente
     fields = '__all__'
     template_name = 'core/cliente_form.html'
     success_url = reverse_lazy('cliente_list')
 
-class ClienteDeleteView(DeleteView):
+class ClienteDeleteView(LoginRequiredMixin,DeleteView):
     model = Cliente
     fields = '__all__'
     template_name = 'core/cliente_confirm_delete.html'
     success_url = reverse_lazy('cliente_list')
 
 
-class VendaCreateView(CreateView):
+class VendaCreateView(LoginRequiredMixin,CreateView):
     model = Venda
     form_class = VendaForm
     template_name = 'core/venda_form.html'
@@ -299,11 +346,24 @@ class VendaCreateView(CreateView):
 
 
             with transaction.atomic():
+
+                usuario_atual = self.request.user
+
+
+                form.instance.vendedor = usuario_atual
                 form.instance.local_origem = local
                 form.instance.data_venda = date.today()
 
+                if usuario_atual.get_username():
+                    form.instance.vendedor_nome_snapshot = usuario_atual.get_username()
+                else:
+                    form.instance.vendedor_nome_snapshot = usuario_atual.username
+
                 if form.instance.cliente:
                     form.instance.cliente_nome_snapshot = form.instance.cliente.nome
+
+                if form.instance.local_origem:
+                    form.instance.local_origem_snapshot = form.instance.local_origem.nome
 
                 self.object = form.save()
 
@@ -340,19 +400,19 @@ class VendaCreateView(CreateView):
 
     def get_success_url(self):
         return reverse('local_detail', kwargs={'pk': self.kwargs.get('local_id')})
-class VendaListView(ListView):
+class VendaListView(LoginRequiredMixin,ListView):
     model = Venda
     template_name = 'core/venda_list.html'
     context_object_name = 'vendas'
 
     def get_queryset(self):
         queryset = Venda.objects.all().order_by('-data_venda')
-        local_id = self.request.GET.get('local') # Pega o ?local=ID da URL
+        local_id = self.request.GET.get('local')
         if local_id:
             queryset = queryset.filter(local_origem_id=local_id)
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['locais'] = Local.objects.all() # Para o botão de filtro
+        context['locais'] = Local.objects.all()
         return context
