@@ -107,6 +107,9 @@ class HistoricoMovimentacaoEstoque(models.Model):
     estoque_atual = models.PositiveIntegerField()
     data_movimentacao = models.DateTimeField(auto_now_add=True)
 
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    usuario_nome_snapshot = models.CharField(max_length=150, blank=True, null=True)
+
     # justifica
     origem = models.CharField(max_length=120, blank=True, null=True)
 
