@@ -1,0 +1,116 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h1 class="h3 fw-bolder mb-1"><i class="bi bi-shield-check text-primary me-2"></i>Auditoria de Estoque</h1>
+            <p class="text-muted small mb-0">Rastreabilidade contínua de movimentações via Observer Pattern</p>
+        </div>
+
+        <div class="btn-group shadow-sm" role="group" aria-label="Filtros de Auditoria">
+            <a href="{% url 'historico_estoque_list' %}" class="btn btn-outline-secondary btn-sm {% if not request.GET.tipo %}active{% endif %}">Todos</a>
+            <a href="{% url 'historico_estoque_list' %}?tipo=ENTRADA" class="btn btn-outline-success btn-sm {% if request.GET.tipo == 'ENTRADA' %}active{% endif %}">Entradas</a>
+            <a href="{% url 'historico_estoque_list' %}?tipo=SAIDA" class="btn btn-outline-danger btn-sm {% if request.GET.tipo == 'SAIDA' %}active{% endif %}">Saídas</a>
+        </div>
+    </div>
+
+    <div class="card shadow border-0 rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-uppercase small text-muted">
+                    <tr>
+                        <th class="ps-4">Data e Hora</th>
+                        <th>Produto</th>
+                        <th>Tipo</th>
+                        <th class="text-center">Variação</th>
+                        <th class="text-center">Antes <i class="bi bi-arrow-right mx-1"></i> Depois</th>
+                        <th class="pe-4">Origem/Motivo</th>
+                    </tr>
+                </thead>
+                <tbody class="border-top-0">
+                    {% for mov in movimentacoes %}
+                    <tr>
+                        <td class="ps-4 text-muted small">
+                            <i class="bi bi-clock me-1 opacity-50"></i> {{ mov.data_movimentacao|date:"d/m/Y H:i" }}
+                        </td>
+
+                        <td class="fw-bold text-dark">
+                            {% if mov.produto %}
+                                {{ mov.produto.tipo.nomeTipo }}
+                            {% else %}
+                                <span class="text-muted text-decoration-line-through me-2">{{ mov.produto_nome_snapshot }}</span>
+                                <span class="badge bg-secondary rounded-pill fw-normal" style="font-size: 0.7rem;">Excluído</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if mov.tipo_movimento == 'ENTRADA' %}
+                                <span class="badge rounded-pill bg-success-subtle text-success border border-success px-3 py-2"><i class="bi bi-arrow-up-circle me-1"></i> Entrada</span>
+                            {% elif mov.tipo_movimento == 'SAIDA' %}
+                                <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger px-3 py-2"><i class="bi bi-arrow-down-circle me-1"></i> Saída</span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-warning-subtle text-warning border border-warning px-3 py-2"><i class="bi bi-pencil-square me-1"></i> Ajuste</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-center">
+                            <span class="fw-bold fs-6 {% if mov.quantidade_alterada > 0 %}text-success{% else %}text-danger{% endif %} bg-light px-2 py-1 rounded-3">
+                                {% if mov.quantidade_alterada > 0 %}+{% endif %}{{ mov.quantidade_alterada }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="d-flex justify-content-center align-items-center text-muted mx-auto" style="min-width: 100px;">
+                                <span class="text-end font-monospace" style="width: 40px;">{{ mov.estoque_anterior }}</span>
+                                <i class="bi bi-arrow-right-short mx-1 text-secondary opacity-75 fs-5"></i>
+                                <strong class="text-start font-monospace text-dark" style="width: 40px;">{{ mov.estoque_atual }}</strong>
+                            </div>
+                        </td>
+
+                        <td class="pe-4 small text-muted">
+                            {{ mov.origem|default:"Sistema" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="text-muted my-4">
+                                <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+                                <p class="mb-0 fs-5">Nenhum registro de auditoria encontrado.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if is_paginated %}
+        <div class="card-footer bg-light border-top-0 d-flex justify-content-center py-3">
+            <nav aria-label="Navegação de páginas de auditoria">
+                <ul class="pagination pagination-sm mb-0 shadow-sm">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link text-primary" href="?page={{ page_obj.previous_page_number }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}">Anterior</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link bg-white text-dark fw-bold px-3">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link text-primary" href="?page={{ page_obj.next_page_number }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}">Próxima</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

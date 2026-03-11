@@ -28,8 +28,11 @@
                 <a class="nav-link" href="{% url 'tipoitem_list' %}">Itens</a>
                 <a class="nav-link" href="{% url 'cliente_list' %}">Clientes</a>
                 <a class="nav-link" href="{% url 'venda_list' %}">Vendas</a>
+                <a class="nav-link" href="{% url 'locacao_list' %}">Locações</a>
                 {% if user.is_superuser %}
                 <a class="nav-link" href="{% url 'user-list' %}">Usuários</a>
+                <a class="nav-link" href="{% url 'historico_estoque_list' %} ">Historico</a>
+
                 {% endif %}
             </div>
         </div>

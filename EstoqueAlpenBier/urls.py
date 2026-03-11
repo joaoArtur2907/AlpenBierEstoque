@@ -70,5 +70,9 @@ urlpatterns = [
     path('usuarios/<int:pk>/delete', views.UserDeleteView.as_view(), name='usuarios-delete'),
 
 
+    # locacao
+    path('locacoes/', views.HistoricoLocacaoListView.as_view(), name='locacao_list'),
 
+    # Audit
+    path('auditoria/estoque/', views.HistoricoMovimentacaoListView.as_view(), name='historico_estoque_list'),
 ]

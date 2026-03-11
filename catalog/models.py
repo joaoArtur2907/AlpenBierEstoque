@@ -63,10 +63,6 @@ class Cliente(models.Model):
 
 # adicionar historico de vendas/transações
 
-# class Venda(models.Model):
-#     itensComprados = models.ManyToManyField(TipoItem)
-#     Comprador = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-#     DataVenda = models.DateField()
 
 class Venda(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, blank=True)
@@ -92,3 +88,31 @@ class ItemVenda(models.Model):
     preco_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     produto_nome_snapshot = models.CharField(max_length=120, blank=True, null=True)
+
+
+# Audit e Observer
+
+class HistoricoMovimentacaoEstoque(models.Model):
+    TIPO_MOVIMENTO_CHOICES = [
+        ('ENTRADA', 'Entrada/Acrésimo'),
+        ('SAIDA', 'Saída/Baixa'),
+        ('AJUSTE', 'Ajuste Manual')
+    ]
+
+    produto = models.ForeignKey('ProdutoVenda', on_delete=models.SET_NULL, null=True, blank=True, related_name='historico_movimentacao')
+    produto_nome_snapshot = models.CharField(max_length=120, blank=True, null=True)
+    tipo_movimento = models.CharField(max_length=20, choices=TIPO_MOVIMENTO_CHOICES)
+    quantidade_alterada = models.IntegerField()
+    estoque_anterior = models.PositiveIntegerField()
+    estoque_atual = models.PositiveIntegerField()
+    data_movimentacao = models.DateTimeField(auto_now_add=True)
+
+    # justifica
+    origem = models.CharField(max_length=120, blank=True, null=True)
+
+    class Meta:
+        ordering = ['-data_movimentacao']
+
+    def __str__(self):
+        nome = self.produto.tipo.nomeTipo if self.produto else self.produto_nome_snapshot
+        return f"{self.get_tipo_movimento_display()} - {nome}: {self.quantidade_alterada}"

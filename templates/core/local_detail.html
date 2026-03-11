@@ -9,6 +9,24 @@
         </ol>
     </nav>
 
+    {% if atrasados %}
+        <div class="alert alert-danger shadow-sm d-flex align-items-center mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+            <div>
+                <h5 class="alert-heading fw-bold mb-1">Atenção: Equipamentos com devolução atrasada!</h5>
+                <ul class="mb-0 ps-3">
+                    {% for item in atrasados %}
+                        <li>
+                            <strong>{{ item.tipo.nomeTipo }} (#{{ item.numeracao }})</strong>
+                            está com <strong>{{ item.locacao_ativa.cliente_local }}</strong>
+                            (Venceu em: {{ item.locacao_ativa.dataFim|date:"d/m/Y" }})
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
     <div class="d-flex justify-content-between align-items-end mb-4">
         <div>
             <h1 class="display-5 fw-bold mb-0">{{ local.nome }}</h1>

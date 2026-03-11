@@ -1,0 +1,92 @@
+.,{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Histórico de Locações</h1>
+
+        <div class="btn-group">
+            <a href="{% url 'locacao_list' %}" class="btn btn-outline-secondary btn-sm">Todos</a>
+            <a href="{% url 'locacao_list' %}?status=ativos" class="btn btn-outline-warning btn-sm">Em Aberto</a>
+            <a href="{% url 'locacao_list' %}?status=finalizados" class="btn btn-outline-success btn-sm">Devolvidos</a>
+        </div>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Equipamento</th>
+                        <th>Cliente / Local</th>
+                        <th>Retirada</th>
+                        <th>Devolução (Prevista)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for loc in locacoes %}
+                    <tr>
+                        <td class="text-muted">#{{ loc.id }}</td>
+
+                        <td>
+                            <span class="fw-bold">{{ loc.equipamento.tipo.nomeTipo }}</span>
+                            <small class="d-block text-muted">Série: #{{ loc.equipamento.numeracao }}</small>
+                        </td>
+
+                        <td>
+                            {{ loc.cliente_local }}
+                        </td>
+
+                        <td>{{ loc.dataInicio|date:"d/m/Y" }}</td>
+                        <td>{{ loc.dataFim|date:"d/m/Y" }}</td>
+
+                        <td>
+                            {% if loc.devolvido %}
+                                <span class="badge bg-success-subtle text-success border border-success">
+                                    Devolvido
+                                </span>
+                            {% else %}
+                                {% now "Y-m-d" as hoje %}
+                                {% if loc.dataFim|date:"Y-m-d" < hoje %}
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-exclamation-triangle"></i> Atrasado
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">
+                                        Em uso
+                                    </span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">Nenhum registro de locação encontrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if is_paginated %}
+        <div class="card-footer bg-white border-top-0 d-flex justify-content-center pt-3">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+                    {% endif %}
+
+                    <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

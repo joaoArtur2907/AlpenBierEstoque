@@ -13,6 +13,8 @@ from datetime import date
 from .forms import VendaForm, ItemVendaFormSet, UserForm, CustomUserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from datetime import date
+from catalog.models import HistoricoMovimentacaoEstoque
 
 from catalog.models import Locacao, Local, ProdutoVenda, TipoItem, EquipamentoAlugavel
 
@@ -91,8 +93,31 @@ class LocalDetailView(LoginRequiredMixin,generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        equipamentos = self.object.equipamentoalugavel_set.all().select_related('tipo')
+        locacoes_ativas = Locacao.objects.filter(equipamento__local_origem=self.object, devolvido=False)
+
+        mapa_locacoes = {loc.equipamento.id: loc for loc in locacoes_ativas}
+        atrasados = []
+        hoje = date.today()
+
+        for eq in equipamentos:
+            if eq.id in mapa_locacoes:
+                eq.locacao_ativa = mapa_locacoes[eq.id]
+
+                if eq.locacao_ativa.dataFim < hoje:
+                    eq.is_atrasado = True
+                    atrasados.append(eq)
+                else:
+                    eq.is_atrasado = False
+            else:
+                eq.is_atrasado = False
+                eq.locacao_ativa = None
+
         context['itens_venda'] = self.object.produtovenda_set.all().select_related('tipo')
-        context['equipamentos'] = self.object.equipamentoalugavel_set.all().select_related('tipo')
+        context['equipamentos'] = equipamentos
+        context['atrasados'] = atrasados
+
         return context
 
 class ProdutoVendaListView(LoginRequiredMixin,ListView):
@@ -416,3 +441,29 @@ class VendaListView(LoginRequiredMixin,ListView):
         context = super().get_context_data(**kwargs)
         context['locais'] = Local.objects.all()
         return context
+
+
+class HistoricoLocacaoListView(LoginRequiredMixin, ListView):
+    model = Locacao
+    template_name = 'core/locacao_list.html'
+    context_object_name = 'locacoes'
+    paginate_by = 20
+    ordering = ['-dataInicio']
+
+
+class HistoricoMovimentacaoListView(LoginRequiredMixin, ListView):
+    """
+    auditoria de estoque
+    """
+    model = HistoricoMovimentacaoEstoque
+    template_name = 'core/historico_estoque_list.html'
+    context_object_name = 'movimentacoes'
+    paginate_by = 20
+
+    # filtro
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        tipo = self.request.GET.get('tipo')
+        if tipo in ['ENTRADA', 'SAIDA', 'AJUSTE']:
+            queryset = queryset.filter(tipo_movimento=tipo)
+        return queryset
