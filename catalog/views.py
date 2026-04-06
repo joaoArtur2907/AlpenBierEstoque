@@ -245,7 +245,7 @@ class LocacaoCreateView(LoginRequiredMixin,CreateView):
         # Associa o equipamento à locação
         form.instance.equipamento = equipamento
 
-        # LÓGICA DE STATUS: Muda o status para Alugado
+        # muda o status para Alugado
         equipamento.status = 'ALUG'
         equipamento.save()
 
@@ -253,12 +253,10 @@ class LocacaoCreateView(LoginRequiredMixin,CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Passa o equipamento para o template para mostrar o nome/série
         context['equipamento'] = get_object_or_404(EquipamentoAlugavel, pk=self.kwargs.get('pk'))
         return context
 
     def get_success_url(self):
-        # Retorna para o local de origem do equipamento
         return reverse('local_detail', kwargs={'pk': self.object.equipamento.local_origem.id})
 
 
@@ -267,17 +265,15 @@ class EquipamentoDevolverView(LoginRequiredMixin,generic.View):
         # Busca o equipamento
         equipamento = get_object_or_404(EquipamentoAlugavel, pk=self.kwargs.get('pk'))
 
-        # Muda o status de volta para Disponível
+        # muda para Disponível
         equipamento.status = 'DISP'
         equipamento.save()
 
-        # Busca a locação ativa deste equipamento e marca como devolvida
         locacao = Locacao.objects.filter(equipamento=equipamento, devolvido=False).last()
         if locacao:
             locacao.devolvido = True
             locacao.save()
 
-        # Redireciona de volta para o detalhe do local
         return redirect('local_detail', pk=equipamento.local_origem.id)
 
 # cliente
@@ -315,13 +311,12 @@ class VendaCreateView(LoginRequiredMixin,CreateView):
         context = super().get_context_data(**kwargs)
         local_id = self.kwargs.get('local_id')
 
-        # Filtro para o dropdown: apenas produtos com estoque > 0 neste local
+        # apenas produtos com estoque > 0 neste local aparecem dropdown
         tipos_disponiveis = TipoItem.objects.filter(
             produtovenda__local_id=local_id,
             produtovenda__quantidade__gt=0
         ).distinct()
 
-        # Prioriza o formset que já contém erros, se existir
         if 'itens' in kwargs:
             itens_formset = kwargs['itens']
         else:
@@ -339,7 +334,6 @@ class VendaCreateView(LoginRequiredMixin,CreateView):
         return context
 
     def form_valid(self, form):
-        # Instancia o formset para validação
         itens_formset = ItemVendaFormSet(self.request.POST)
         local = get_object_or_404(Local, pk=self.kwargs.get('local_id'))
 
@@ -352,7 +346,6 @@ class VendaCreateView(LoginRequiredMixin,CreateView):
 
                     preco = item_form.cleaned_data.get('preco_unitario')
 
-                    # Validação de valor negativo ou zero
                     if qtd_pedida <= 0:
                         item_form.add_error('quantidade', "A quantidade deve ser maior que zero.")
                         return self.render_to_response(self.get_context_data(form=form, itens=itens_formset))
@@ -364,7 +357,6 @@ class VendaCreateView(LoginRequiredMixin,CreateView):
                     total_estoque = sum(p.quantidade for p in ProdutoVenda.objects.filter(local=local, tipo=tipo))
 
                     if total_estoque < qtd_pedida:
-                        # Adiciona o erro e retorna o formset específico
                         item_form.add_error('quantidade', f"Estoque insuficiente! (Disponível: {total_estoque})")
                         return self.render_to_response(self.get_context_data(form=form, itens=itens_formset))
 
@@ -452,9 +444,7 @@ class HistoricoLocacaoListView(LoginRequiredMixin, ListView):
 
 
 class HistoricoMovimentacaoListView(LoginRequiredMixin, ListView):
-    """
-    auditoria de estoque
-    """
+
     model = HistoricoMovimentacaoEstoque
     template_name = 'core/historico_estoque_list.html'
     context_object_name = 'movimentacoes'

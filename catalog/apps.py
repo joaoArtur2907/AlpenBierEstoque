@@ -5,6 +5,5 @@ class CatalogConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'catalog'
 
-    # executado quando o programa inicia
     def ready(self):
         import catalog.signals

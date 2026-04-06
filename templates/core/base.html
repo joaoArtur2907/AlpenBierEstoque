@@ -8,38 +8,71 @@
 </head>
 <body class="bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-        <div class="container">
-                 <div class="d-flex align-items-center">
-          {% if user.is_authenticated %}
-              <span class="me-3 text-white">Olá, {{ user.username }}</span>
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4 sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{% url 'local_list' %}">
+            <i class="bi bi-box-seam text-warning me-2"></i>Estoque Alpen Bier
+        </a>
 
-              <form action="{% url 'logout' %}" method="post">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-outline-light btn-sm">Sair</button>
-              </form>
-          {% else %}
-              <a href="{% url 'login' %}" class="btn btn-light btn-sm">Entrar</a>
-          {% endif %}
-      </div>
-            <a class="navbar-brand" href="#">Estoque Alpen Bier</a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="{% url 'local_list' %}">Locais</a>
-                <a class="nav-link" href="{% url 'tipoitem_list' %}">Itens</a>
-                <a class="nav-link" href="{% url 'cliente_list' %}">Clientes</a>
-                <a class="nav-link" href="{% url 'venda_list' %}">Vendas</a>
-                <a class="nav-link" href="{% url 'locacao_list' %}">Locações</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPrincipal" aria-controls="navbarPrincipal" aria-expanded="false" aria-label="Abrir navegação">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarPrincipal">
+
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-cart3"></i> Operações
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow">
+                        <li><a class="dropdown-item" href="{% url 'venda_list' %}">Vendas</a></li>
+                        <li><a class="dropdown-item" href="{% url 'locacao_list' %}">Locações</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-folder2-open"></i> Cadastros
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow">
+                        <li><a class="dropdown-item" href="{% url 'local_list' %}">Locais</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tipoitem_list' %}">Itens</a></li>
+                        <li><a class="dropdown-item" href="{% url 'cliente_list' %}">Clientes</a></li>
+                    </ul>
+                </li>
+
                 {% if user.is_superuser %}
-                <a class="nav-link" href="{% url 'user-list' %}">Usuários</a>
-                <a class="nav-link" href="{% url 'historico_estoque_list' %} ">Historico</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-warning" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-shield-lock"></i> Administração
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow">
+                        <li><a class="dropdown-item" href="{% url 'user-list' %}">Usuários</a></li>
+                        <li><a class="dropdown-item" href="{% url 'historico_estoque_list' %}">Auditoria de Estoque</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+            </ul>
 
+            <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
+                {% if user.is_authenticated %}
+                    <span class="text-light small">
+                        Olá, <strong>{{ user.username }}</strong>
+                    </span>
+                    <form action="{% url 'logout' %}" method="post" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-light btn-sm">Sair</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-light btn-sm"><i class="bi bi-box-arrow-in-right me-1"></i> Entrar</a>
                 {% endif %}
             </div>
-        </div>
-        <nav class="navbar ...">
 
+        </div>
+    </div>
 </nav>
-    </nav>
 
     <div class="container">
         {% block content %}

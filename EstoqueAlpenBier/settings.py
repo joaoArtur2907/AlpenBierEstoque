@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'catalog.apps.CatalogConfig',
     'widget_tweaks',
+    'rest_framework'
 
 ]
 
@@ -133,3 +134,10 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'local_list'
 
 LOGOUT_REDIRECT_URL = 'login'
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+SESSION_COOKIE_AGE = 3600
+
+# sessão é renovada a cada click
+SESSION_SAVE_EVERY_REQUEST = True

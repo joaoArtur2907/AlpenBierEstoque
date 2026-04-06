@@ -10,7 +10,7 @@ def get_current_user():
 
 class CurrentUserMiddleware:
     """
-    Middleware captura usuario logado na requisicao para ser usado em outros lugares.
+    captura usuario logado na requisicao.
     """
 
     def __init__(self, get_response):
