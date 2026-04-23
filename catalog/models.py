@@ -119,3 +119,17 @@ class HistoricoMovimentacaoEstoque(models.Model):
     def __str__(self):
         nome = self.produto.tipo.nomeTipo if self.produto else self.produto_nome_snapshot
         return f"{self.get_tipo_movimento_display()} - {nome}: {self.quantidade_alterada}"
+
+
+class NotificacaoSistema(models.Model):
+    TIPO_CHOICES = (
+        ('VENCIMENTO', 'Vencimento próximo'),
+        ('ATRASO', 'Aluguel atrasado')
+    )
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='VENCIMENTO')
+    mensagem = models.TextField()
+    lida = models.BooleanField(default=False)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"[{self.tipo}]{self.mensagem}"

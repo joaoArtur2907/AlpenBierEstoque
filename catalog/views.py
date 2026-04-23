@@ -5,9 +5,10 @@ from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
+from django.views.decorators.http import require_POST
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.views import generic
-from .models import Locacao, EquipamentoAlugavel, Cliente, Venda, ItemVenda
+from .models import Locacao, EquipamentoAlugavel, Cliente, Venda, ItemVenda, NotificacaoSistema
 from django.shortcuts import get_object_or_404
 from datetime import date
 from .forms import VendaForm, ItemVendaFormSet, UserForm, CustomUserCreationForm
@@ -457,3 +458,14 @@ class HistoricoMovimentacaoListView(LoginRequiredMixin, ListView):
         if tipo in ['ENTRADA', 'SAIDA', 'AJUSTE']:
             queryset = queryset.filter(tipo_movimento=tipo)
         return queryset
+
+@require_POST
+def marcar_notificacao_lida(request, pk=None):
+    if pk:
+        # marca notiff especifica apenas
+        NotificacaoSistema.objects.filter(pk=pk, lida=False).update(lida=True)
+    else:
+        # marca todas
+        NotificacaoSistema.objects.filter(lida=False).update(lida=True)
+
+    return redirect(request.META.get('HTTP_REFERER', '/'))

@@ -79,4 +79,9 @@ urlpatterns = [
     # Rotas da api
     path('api/v1/', include(router.urls)),
 
+    # notificações
+
+    path('notificacao/lida/todas/',views.marcar_notificacao_lida, name="marcar_todas_lidas"),
+    path('notificacao/lida/<int:pk>/', views.marcar_notificacao_lida, name="marcar_notificacao_lida"),
+
 ]
