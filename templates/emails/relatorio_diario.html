@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+    <div style="max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+
+        <div style="background-color: #212529; color: #ffc107; padding: 20px; text-align: center;">
+            <h2 style="margin: 0;">⚠️ Relatório Diário de Estoque</h2>
+        </div>
+
+        <div style="padding: 20px;">
+            <p>Olá,</p>
+            <p>O sistema detectou pendências que exigem a sua atenção hoje:</p>
+
+            {% if produtos %}
+            <h3 style="color: #dc3545; border-bottom: 1px solid #ddd; padding-bottom: 5px;">🍺 Produtos Vencendo</h3>
+            <ul>
+                {% for produto in produtos %}
+                    <li><strong>{{ produto.tipo.nomeTipo }}</strong> no depósito '{{ produto.local.nome }}' vence em {{ produto.validade|date:"d/m/Y" }}.</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if alugueis %}
+            <h3 style="color: #dc3545; border-bottom: 1px solid #ddd; padding-bottom: 5px;">🚚 Aluguéis Atrasados</h3>
+            <ul>
+                {% for aluguel in alugueis %}
+                    <li><strong>{{ aluguel.equipamento.tipo.nomeTipo }}</strong> de '{{ aluguel.cliente_local }}' deveria ter sido devolvido em {{ aluguel.dataFim|date:"d/m/Y" }}.</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <div style="margin-top: 30px; text-align: center;">
+                <a href="http://127.0.0.1:8000/" style="background-color: #ffc107; color: #212529; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px;">Acessar o Sistema</a>
+            </div>
+        </div>
+
+        <div style="background-color: #f8f9fa; padding: 10px; text-align: center; font-size: 12px; color: #666;">
+            Mensagem automática gerada pelo sistema Estoque Alpen Bier.
+        </div>
+    </div>
+</body>
+</html>

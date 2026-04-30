@@ -151,3 +151,15 @@ SESSION_COOKIE_AGE = 3600
 
 # sessão é renovada a cada click
 SESSION_SAVE_EVERY_REQUEST = True
+
+# configs email
+
+# imprime o email no terminal para testes
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = f"Sistema Estoque Alpen Bier <{EMAIL_HOST_USER}>"
