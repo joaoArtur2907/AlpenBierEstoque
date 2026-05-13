@@ -83,5 +83,9 @@ urlpatterns = [
 
     path('notificacao/lida/todas/',views.marcar_notificacao_lida, name="marcar_todas_lidas"),
     path('notificacao/lida/<int:pk>/', views.marcar_notificacao_lida, name="marcar_notificacao_lida"),
+    path('notificacao/popups/', views.checar_popups_importacao, name="checar_popups_importacao"),
+
+    # planilhas
+    path('importar-planilha/', views.importar_planilha, name="importar_planilha"),
 
 ]

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
@@ -16,6 +17,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from datetime import date
 from catalog.models import HistoricoMovimentacaoEstoque
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.core.files.storage import FileSystemStorage
+from .tasks import processar_planilha_estoque
+from django.http import JsonResponse
 
 from catalog.models import Locacao, Local, ProdutoVenda, TipoItem, EquipamentoAlugavel
 
@@ -469,3 +475,34 @@ def marcar_notificacao_lida(request, pk=None):
         NotificacaoSistema.objects.filter(lida=False).update(lida=True)
 
     return redirect(request.META.get('HTTP_REFERER', '/'))
+
+# importar planilha
+
+def importar_planilha(request):
+    if request.method == 'POST' and request.FILES.get('planilha'):
+        arquivo = request.FILES['planilha']
+
+        # salva arquivo temporariamente
+        fs = FileSystemStorage(location=settings.MEDIA_ROOT / 'planilhas')
+        nome_arquivo_salvo = fs.save(arquivo.name, arquivo)
+        caminho_completo = fs.path(nome_arquivo_salvo)
+
+        # envia para celery processar em segundo plano
+        processar_planilha_estoque.delay(caminho_completo)
+
+        messages.success(request, 'Planilha enviada com sucesso e está sendo processada em segundo plano, você será notificado ao finalizar')
+        return redirect('local_list')
+
+def checar_popups_importacao(request):
+    if request.user.is_authenticated:
+        # busca notiff de importação não exibida ainda
+        notificacao = NotificacaoSistema.objects.filter(tipo='IMPORTACAO', lida=False).first()
+
+        if notificacao:
+            return JsonResponse({
+                'tem_popup': True,
+                'id': notificacao.id,
+                'mensagem': notificacao.mensagem,
+            })
+
+    return JsonResponse({'tem_popup': False})

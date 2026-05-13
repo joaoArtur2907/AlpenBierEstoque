@@ -3,53 +3,135 @@
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
+
         <div>
             <h1 class="h3 mb-0 text-gray-800">Nossos Depósitos</h1>
             <p class="text-muted">Gerenciamento de salas refrigeradas e estoques.</p>
         </div>
-        <a href="{% url 'local_create' %}" class="btn btn-success shadow-sm">
-            <i class="bi bi-plus-lg"></i> + Novo Local
-        </a>
 
+        <!-- Grupo de botões -->
+        <div class="d-flex gap-2">
 
+            <a href="{% url 'local_create' %}" class="btn btn-success shadow-sm">
+                <i class="bi bi-plus-lg"></i> + Novo Local
+            </a>
 
+            <!-- Botão que abre o Modal -->
+            <button type="button"
+                    class="btn btn-success shadow-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalUploadExcel">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Importar Planilha
+            </button>
+
+        </div>
+    </div>
+
+    <!-- O Modal de Upload -->
+    <div class="modal fade" id="modalUploadExcel" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title">Importar Estoque (Excel/CSV)</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <!-- Formulário com enctype="multipart/form-data" -->
+          <form action="{% url 'importar_planilha' %}" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+
+              <div class="modal-body">
+                <p>
+                    Faça o upload do arquivo gerado no Google Sheets.
+                    O arquivo deve conter as colunas:
+                    <strong>produto_tipo, deposito, quantidade, data_validade</strong>.
+                </p>
+
+                <div class="mb-3">
+                  <input class="form-control"
+                         type="file"
+                         id="arquivoExcel"
+                         name="planilha"
+                         accept=".xlsx, .csv"
+                         required>
+                </div>
+              </div>
+
+              <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="btn btn-success">
+                    Processar Planilha
+                </button>
+              </div>
+
+          </form>
+        </div>
+      </div>
     </div>
 
     <div class="row">
         {% for local in locais %}
         <div class="col-xl-4 col-md-6 mb-4">
             <div class="card border-left-primary shadow h-100 py-2">
+
                 <div class="card-body">
+
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
+
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                 Unidade Armazenamento
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ local.nome }}</div>
-                            <p class="text-muted small mt-2">{{ local.endereco }}</p>
+
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ local.nome }}
+                            </div>
+
+                            <p class="text-muted small mt-2">
+                                {{ local.endereco }}
+                            </p>
+
                         </div>
                     </div>
 
                     <hr>
 
                     <div class="d-flex justify-content-between align-items-center">
-                        <a href="{% url 'local_detail' local.pk %}" class="btn btn-sm btn-primary">
+
+                        <a href="{% url 'local_detail' local.pk %}"
+                           class="btn btn-sm btn-primary">
                             Ver Estoque
                         </a>
 
                         <div class="btn-group">
-                            <a href="{% url 'local_update' local.pk %}" class="btn btn-sm btn-outline-warning">Editar</a>
-                            <a href="{% url 'local_delete' local.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                            <a href="{% url 'local_update' local.pk %}"
+                               class="btn btn-sm btn-outline-warning">
+                                Editar
+                            </a>
+
+                            <a href="{% url 'local_delete' local.pk %}"
+                               class="btn btn-sm btn-outline-danger">
+                                Excluir
+                            </a>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
+
         {% empty %}
         <div class="col-12">
             <div class="alert alert-warning text-center">
                 Nenhum depósito cadastrado no momento.
-                <a href="{% url 'local_create' %}" class="alert-link">Clique aqui para começar.</a>
+                <a href="{% url 'local_create' %}" class="alert-link">
+                    Clique aqui para começar.
+                </a>
             </div>
         </div>
         {% endfor %}
